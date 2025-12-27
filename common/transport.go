@@ -2,6 +2,7 @@ package common
 
 import (
 	"encoding/json"
+	"io"
 )
 
 type Position = int
@@ -46,3 +47,18 @@ func DeserializeMoveInput(b []byte) MoveInput {
 	return i
 }
 
+type lineWriter struct {
+	io.Writer
+}
+
+func NewLineWriter(w io.Writer) io.Writer {
+	return lineWriter{w}
+}
+
+func (w lineWriter) Write(p []byte) (int, error) {
+	pCopy := make([]byte, len(p), len(p) + 1)
+	copy(pCopy, p)
+	pCopy = append(pCopy, '\n')	
+	n, err := w.Writer.Write(pCopy)
+	return min(len(p), n), err
+}
