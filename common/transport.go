@@ -9,7 +9,7 @@ type Position = int
 type ID = string
 
 type ClientGameState struct {
-	You Position
+	You    Position
 	Others map[ID]Position
 }
 
@@ -29,7 +29,7 @@ func DeserializeClientGameState(b []byte) ClientGameState {
 type MoveInput string
 
 const (
-	MoveLeftInput MoveInput = "a"
+	MoveLeftInput  MoveInput = "a"
 	MoveRightInput MoveInput = "d"
 )
 
@@ -56,9 +56,9 @@ func NewLineWriter(w io.Writer) io.Writer {
 }
 
 func (w lineWriter) Write(p []byte) (int, error) {
-	pCopy := make([]byte, len(p), len(p) + 1)
+	pCopy := make([]byte, len(p), len(p)+1)
 	copy(pCopy, p)
-	pCopy = append(pCopy, '\n')	
+	pCopy = append(pCopy, '\n')
 	n, err := w.Writer.Write(pCopy)
 	return min(len(p), n), err
 }

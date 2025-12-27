@@ -12,7 +12,7 @@ import (
 )
 
 var broadcastsPerSecond = 5
-var timeBetweenBroadcastsMs = time.Duration(1000 / broadcastsPerSecond) * time.Millisecond
+var timeBetweenBroadcastsMs = time.Duration(1000/broadcastsPerSecond) * time.Millisecond
 
 var port = 8080
 var address = fmt.Sprintf(":%d", port)
@@ -21,7 +21,7 @@ type serverGameState = map[serverID]common.Position
 type strippedServerGameState = map[common.ID]common.Position
 
 type serverID struct {
-	id common.ID
+	id   common.ID
 	conn net.Conn
 }
 
@@ -47,7 +47,7 @@ func main() {
 
 func handleConnection(id serverID, sgs serverGameState, mu sync.Mutex) {
 	defer id.conn.Close()
-	defer func () {
+	defer func() {
 		mu.Lock()
 		defer mu.Unlock()
 		delete(sgs, id)
@@ -71,12 +71,12 @@ func handleInput(mi common.MoveInput, id serverID, sgs serverGameState, mu sync.
 	mu.Lock()
 	defer mu.Unlock()
 	switch mi {
-		case common.MoveLeftInput:
-			sgs[id] -= common.MoveStep
-		case common.MoveRightInput:
-			sgs[id] += common.MoveStep
-		default:
-			panic("bad move input")
+	case common.MoveLeftInput:
+		sgs[id] -= common.MoveStep
+	case common.MoveRightInput:
+		sgs[id] += common.MoveStep
+	default:
+		panic("bad move input")
 	}
 }
 
@@ -115,8 +115,8 @@ func personalizeGs(id common.ID, smallSgs strippedServerGameState) common.Client
 	you := smallSgs[id]
 	others := maps.Clone(smallSgs)
 	delete(others, id)
-	return common.ClientGameState {
-		You: you,
+	return common.ClientGameState{
+		You:    you,
 		Others: others,
 	}
 }

@@ -21,7 +21,7 @@ var red = color.NRGBA{255, 0, 0, 255}
 
 type Game struct {
 	positions []common.Position
-	writer io.Writer
+	writer    io.Writer
 }
 
 func (g *Game) Update() error {
@@ -56,7 +56,7 @@ func main() {
 	defer conn.Close()
 	g := &Game{
 		positions: []common.Position{},
-		writer: common.NewLineWriter(conn),
+		writer:    common.NewLineWriter(conn),
 	}
 	go listenForUpdates(g, conn)
 	if err := runGame(g, conn); err != nil {
