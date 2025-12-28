@@ -33,21 +33,21 @@ type Game struct {
 func (g *Game) Update() error {
 	keyInputs := ebiten.InputChars()
 	for _, key := range keyInputs {
-		g.handleKeyInput(key)
+		handleKeyInput(g, key)
 	}
 	updateState(g)
 	return nil
 }
 
-func (g *Game) handleKeyInput(key rune) {
+func handleKeyInput(g *Game, key rune) {
 	mi, badKey := keyToMoveInput(key)
 	if badKey {
 		return
 	}
+	predictNewState(g, mi)
 	msg := common.SerializeMoveInput(mi)
 	_, err := g.writer.Write(msg)
 	common.Must(err)
-	// TODO: Predict.
 }
 
 func keyToMoveInput(key rune) (common.MoveInput, bool) {
@@ -61,11 +61,23 @@ func keyToMoveInput(key rune) (common.MoveInput, bool) {
 	}
 }
 
+func predictNewState(g *Game, mi common.MoveInput) {
+	switch mi {
+	case common.MoveLeftInput:
+		g.state.You -= common.MoveStep
+	case common.MoveRightInput:
+		g.state.You += common.MoveStep
+	default:
+		panic("bad move input")
+	}
+}
+
 func updateState(g *Game) {
 	g.mu.Lock()
 	defer g.mu.Unlock()
 	if len(g.updates) > 0 {
-		g.state = g.updates[0]
+		update := g.updates[0]
+		g.state.Others = update.Others
 		g.updates = g.updates[1:]
 	}
 }
