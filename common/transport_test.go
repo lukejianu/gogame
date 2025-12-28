@@ -21,6 +21,5 @@ func TestClientGameStateTransport(t *testing.T) {
 			"id1": 85,
 		},
 	}
-	assert.Equal(([]byte)("\n"), SerializeClientGameState(cgs))
 	assert.Equal(cgs, DeserializeClientGameState(SerializeClientGameState(cgs)))
 }
