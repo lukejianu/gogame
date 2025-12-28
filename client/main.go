@@ -31,17 +31,14 @@ type Game struct {
 }
 
 func (g *Game) Update() error {
-	keyInputs := ebiten.InputChars()
-	for _, key := range keyInputs {
-		handleKeyInput(g, key)
-	}
+	handleKeyInput(g)
 	updateState(g)
 	return nil
 }
 
-func handleKeyInput(g *Game, key rune) {
-	mi, badKey := keyToMoveInput(key)
-	if badKey {
+func handleKeyInput(g *Game) {
+	mi, skip := keyToMoveInput()
+	if skip {
 		return
 	}
 	predictNewState(g, mi)
@@ -50,11 +47,14 @@ func handleKeyInput(g *Game, key rune) {
 	common.Must(err)
 }
 
-func keyToMoveInput(key rune) (common.MoveInput, bool) {
-	switch key {
-	case 'a':
+func keyToMoveInput() (common.MoveInput, bool) {
+	switch {
+	case ebiten.IsKeyPressed(ebiten.KeyA) && ebiten.IsKeyPressed(ebiten.KeyD):
+		// TODO: Check if ROTMG has this behavior.
+		return common.MoveInput(0), true
+	case ebiten.IsKeyPressed(ebiten.KeyA):
 		return common.MoveLeftInput, false
-	case 'd':
+	case ebiten.IsKeyPressed(ebiten.KeyD):
 		return common.MoveRightInput, false
 	default:
 		return common.MoveInput(0), true
