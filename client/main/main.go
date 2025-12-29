@@ -36,9 +36,21 @@ type Game struct {
 }
 
 func (g *Game) Update() error {
+	handleMouseInput(g)
 	handleKeyInput(g)
 	updateState(g)
 	return nil
+}
+
+func handleMouseInput(g *Game) {
+	if !ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
+		return
+	}
+	x, y := ebiten.CursorPosition()
+	si := common.ShootInput{x, y}
+	msg := common.SerializeShootInput(si)
+	_, err := g.writer.Write(msg)
+	common.Must(err)
 }
 
 func handleKeyInput(g *Game) {
@@ -106,6 +118,27 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	for _, p := range g.state.Others {
 		DrawCircle(screen, p, red)
 	}
+	for _, s := range g.state.Shots {
+		p := s.Position
+		DrawShot(screen, p.X, p.Y, s.Angle)
+	}
+}
+
+func DrawShot(screen *ebiten.Image, x, y int, theta float64) {
+	proj := ebiten.NewImage(5, 20)
+	proj.Fill(gray)
+	DrawRotatedImage(screen, proj, float64(x), float64(y), theta)
+}
+
+func DrawRotatedImage(screen, img *ebiten.Image, x, y, theta float64) {
+	s := img.Bounds().Size()
+	op := &ebiten.DrawImageOptions{}
+
+	op.GeoM.Translate(-float64(s.X)/2, -float64(s.Y)/2)
+	op.GeoM.Rotate(theta)
+	op.GeoM.Translate(x, y)
+
+	screen.DrawImage(img, op)
 }
 
 func DrawCircle(screen *ebiten.Image, x int, c color.Color) {

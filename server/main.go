@@ -60,9 +60,10 @@ func handleConnection(id serverID, sgs serverGameState, mu sync.Mutex) {
 		switch msg.Tag {
 		case common.MoveMessage:
 			mi := common.DeserializeMoveInput(b)
-			handleInput(mi, id, sgs, mu)
+			handleMoveInput(mi, id, sgs, mu)
 		case common.ShootMessage:
-			// TODO: Handle mouse input.
+			si := common.DeserializeShootInput(b)
+			handleShootInput(si, id, sgs, mu)
 		default:
 			panic("bad msg")
 		}
@@ -76,7 +77,7 @@ func registerId(id serverID, sgs serverGameState, mu sync.Mutex) {
 	sgs[id] = startPosition
 }
 
-func handleInput(mi common.MoveInput, id serverID, sgs serverGameState, mu sync.Mutex) {
+func handleMoveInput(mi common.MoveInput, id serverID, sgs serverGameState, mu sync.Mutex) {
 	mu.Lock()
 	defer mu.Unlock()
 	switch mi {
@@ -87,6 +88,11 @@ func handleInput(mi common.MoveInput, id serverID, sgs serverGameState, mu sync.
 	default:
 		panic("bad move input")
 	}
+}
+
+func handleShootInput(si common.ShootInput, id serverID, sgs serverGameState, mu sync.Mutex) {
+	mu.Lock()
+	defer mu.Unlock()
 }
 
 func broadcastGameStateOnTicker(sgs serverGameState, mu sync.Mutex) {

@@ -33,9 +33,20 @@ type Message struct {
 type Position = int
 type ID = string
 
+type Position2D struct {
+	X int
+	Y int
+}
+
+type Shot struct {
+	Position Position2D
+	Angle    float64
+}
+
 type ClientGameState struct {
 	You    Position
 	Others map[ID]Position
+	Shots  []Shot
 }
 
 func SerializeClientGameState(cgs ClientGameState) []byte {
