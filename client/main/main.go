@@ -8,7 +8,9 @@ import (
 	"log"
 	"net"
 	"sync"
+	"time"
 
+	"github.com/lukejianu/gogame/client"
 	"github.com/lukejianu/gogame/common"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -24,8 +26,10 @@ var blue = color.NRGBA{0, 0, 255, 255}
 type Game struct {
 	state common.ClientGameState
 
-	updates []common.ClientGameState
+	updates []client.TimestampedClientGameState
 	mu      sync.Mutex
+
+	interp *client.Interpolater
 
 	writer io.Writer
 }
@@ -75,11 +79,25 @@ func predictNewState(g *Game, mi common.MoveInput) {
 func updateState(g *Game) {
 	g.mu.Lock()
 	defer g.mu.Unlock()
-	if len(g.updates) > 0 {
-		update := g.updates[0]
-		g.state.Others = update.Others
-		g.updates = g.updates[1:]
+
+	if len(g.updates) < 2 {
+		return
 	}
+
+	if g.interp == nil {
+		lastUpdate, currUpdate := g.updates[0], g.updates[1]
+		interp := client.NewGameStateInterpolater(lastUpdate, currUpdate)
+		g.interp = &interp
+	}
+
+	cgs, interpDone := (*g.interp).Interpolate(time.Now())
+	if interpDone {
+		g.updates = g.updates[1:]
+		g.interp = nil
+		return
+	}
+
+	g.state.Others = cgs.Others
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
@@ -127,7 +145,7 @@ func listenForUpdates(g *Game, conn net.Conn) {
 func appendUpdate(g *Game, cgs common.ClientGameState) {
 	g.mu.Lock()
 	defer g.mu.Unlock()
-	g.updates = append(g.updates, cgs)
+	g.updates = append(g.updates, client.TimestampCgs(cgs))
 }
 
 func connect() net.Conn {
