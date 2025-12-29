@@ -5,6 +5,31 @@ import (
 	"io"
 )
 
+func MustSerialize[T any](msg T) []byte {
+	b, err := json.Marshal(msg)
+	Must(err)
+	return b
+}
+
+func MustDeserialize[T any](b []byte, t T) T {
+	err := json.Unmarshal(b, &t)
+	Must(err)
+	return t
+}
+
+type MessageType string
+
+const (
+	StateUpdateMessage MessageType = "update"
+	KeyPressMessage    MessageType = "key"
+	MouseClickMessage  MessageType = "mouse"
+)
+
+type Message struct {
+	Tag  MessageType
+	Data json.RawMessage
+}
+
 type Position = int
 type ID = string
 
@@ -14,16 +39,22 @@ type ClientGameState struct {
 }
 
 func SerializeClientGameState(cgs ClientGameState) []byte {
-	b, err := json.Marshal(cgs)
-	Must(err)
+	msg := Message{
+		Tag:  StateUpdateMessage,
+		Data: MustSerialize(cgs),
+	}
+	b := MustSerialize(msg)
 	return b
 }
 
 func DeserializeClientGameState(b []byte) ClientGameState {
-	cgs := ClientGameState{}
-	err := json.Unmarshal(b, &cgs)
-	Must(err)
-	return cgs
+	msg := MustDeserialize(b, Message{})
+	switch msg.Tag {
+	case StateUpdateMessage:
+		return MustDeserialize(msg.Data, ClientGameState{})
+	default:
+		panic("bad update")
+	}
 }
 
 type MoveInput string
@@ -33,18 +64,23 @@ const (
 	MoveRightInput MoveInput = "d"
 )
 
-// TODO: See if you can de-duplicate by creating a generic SerializeT.
 func SerializeMoveInput(i MoveInput) []byte {
-	b, err := json.Marshal(i)
-	Must(err)
+	msg := Message{
+		Tag:  KeyPressMessage,
+		Data: MustSerialize(i),
+	}
+	b := MustSerialize(msg)
 	return b
 }
 
 func DeserializeMoveInput(b []byte) MoveInput {
-	i := MoveInput("")
-	err := json.Unmarshal(b, &i)
-	Must(err)
-	return i
+	msg := MustDeserialize(b, Message{})
+	switch msg.Tag {
+	case KeyPressMessage:
+		return MustDeserialize(msg.Data, MoveInput(""))
+	default:
+		panic("bad move")
+	}
 }
 
 type lineWriter struct {

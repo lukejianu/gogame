@@ -55,8 +55,17 @@ func handleConnection(id serverID, sgs serverGameState, mu sync.Mutex) {
 	registerId(id, sgs, mu)
 	scan := bufio.NewScanner(id.conn)
 	for scan.Scan() {
-		mi := common.DeserializeMoveInput(scan.Bytes())
-		handleInput(mi, id, sgs, mu)
+		b := scan.Bytes()
+		msg := common.MustDeserialize(b, common.Message{})
+		switch msg.Tag {
+		case common.KeyPressMessage:
+			mi := common.DeserializeMoveInput(b)
+			handleInput(mi, id, sgs, mu)
+		case common.MouseClickMessage:
+			// TODO: Handle mouse input.
+		default:
+			panic("bad msg")
+		}
 	}
 }
 
