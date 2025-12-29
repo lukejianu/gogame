@@ -58,10 +58,10 @@ func handleConnection(id serverID, sgs serverGameState, mu sync.Mutex) {
 		b := scan.Bytes()
 		msg := common.MustDeserialize(b, common.Message{})
 		switch msg.Tag {
-		case common.KeyPressMessage:
+		case common.MoveMessage:
 			mi := common.DeserializeMoveInput(b)
 			handleInput(mi, id, sgs, mu)
-		case common.MouseClickMessage:
+		case common.ShootMessage:
 			// TODO: Handle mouse input.
 		default:
 			panic("bad msg")

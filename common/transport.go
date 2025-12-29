@@ -21,8 +21,8 @@ type MessageType string
 
 const (
 	StateUpdateMessage MessageType = "update"
-	KeyPressMessage    MessageType = "key"
-	MouseClickMessage  MessageType = "mouse"
+	MoveMessage        MessageType = "move"
+	ShootMessage       MessageType = "shoot"
 )
 
 type Message struct {
@@ -66,7 +66,7 @@ const (
 
 func SerializeMoveInput(i MoveInput) []byte {
 	msg := Message{
-		Tag:  KeyPressMessage,
+		Tag:  MoveMessage,
 		Data: MustSerialize(i),
 	}
 	b := MustSerialize(msg)
@@ -76,10 +76,31 @@ func SerializeMoveInput(i MoveInput) []byte {
 func DeserializeMoveInput(b []byte) MoveInput {
 	msg := MustDeserialize(b, Message{})
 	switch msg.Tag {
-	case KeyPressMessage:
+	case MoveMessage:
 		return MustDeserialize(msg.Data, MoveInput(""))
 	default:
-		panic("bad move")
+		panic("bad move msg")
+	}
+}
+
+type ShootInput [2]int // (x, y).
+
+func SerializeShootInput(i ShootInput) []byte {
+	msg := Message{
+		Tag:  ShootMessage,
+		Data: MustSerialize(i),
+	}
+	b := MustSerialize(msg)
+	return b
+}
+
+func DeserializeShootInput(b []byte) ShootInput {
+	msg := MustDeserialize(b, Message{})
+	switch msg.Tag {
+	case ShootMessage:
+		return MustDeserialize(msg.Data, ShootInput{})
+	default:
+		panic("bad shoot msg")
 	}
 }
 

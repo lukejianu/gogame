@@ -22,6 +22,7 @@ var address = fmt.Sprintf(":%d", port)
 
 var red = color.NRGBA{255, 0, 0, 255}
 var blue = color.NRGBA{0, 0, 255, 255}
+var gray = color.NRGBA{100, 100, 100, 255}
 
 type Game struct {
 	state common.ClientGameState
@@ -128,6 +129,7 @@ func main() {
 }
 
 func runGame(g *Game, conn net.Conn) error {
+	ebiten.SetCursorShape(ebiten.CursorShapeCrosshair)
 	ebiten.SetWindowSize(500, 500)
 	ebiten.SetWindowTitle("Hello, World!")
 	return ebiten.RunGame(g)

@@ -12,6 +12,12 @@ func TestMoveInputTransport(t *testing.T) {
 	assert.Equal(MoveRightInput, DeserializeMoveInput(SerializeMoveInput(MoveRightInput)))
 }
 
+func TestShootInputTransport(t *testing.T) {
+	assert := assert.New(t)
+	i := ShootInput{50, 100}
+	assert.Equal(i, DeserializeShootInput(SerializeShootInput(i)))
+}
+
 func TestClientGameStateTransport(t *testing.T) {
 	assert := assert.New(t)
 	cgs := ClientGameState{
